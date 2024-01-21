@@ -7,9 +7,19 @@
     "typecheck": "tsc -noEmit"
   },
   "devDependencies": {
-    "@types/node": "^20.11.0",
+    "@sparticuz/chromium": "^119.0.2",
     "@types/aws-lambda": "^8.10.131",
-    "vitest": "^1.2.0",
-    "sst": "^2.39.5"
+    "@types/node": "^20.11.0",
+    "sst": "^2.39.5",
+    "vitest": "^1.2.0"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.490.0",
+    "@playwright/test": "^1.40.1",
+    "dynamodb-onetable": "^2.7.1",
+    "googleapis": "^131.0.0",
+    "playwright": "^1.40.1",
+    "playwright-aws-lambda": "^0.10.0",
+    "playwright-core": "^1.40.1"
   }
 }

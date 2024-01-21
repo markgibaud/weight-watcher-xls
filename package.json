@@ -4,11 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "sst dev",
-    "build": "sst build",
-    "deploy": "sst deploy",
+    "dev": "AWS_PROFILE=appified sst dev",
+    "build": "AWS_PROFILE=appified sst build",
+    "deploy": "AWS_PROFILE=appified sst deploy",
     "remove": "sst remove",
-    "console": "sst console",
+    "console": "AWS_PROFILE=appified sst console",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
