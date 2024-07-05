@@ -6,7 +6,7 @@ export const handler = async (evt: DynamoDBStreamEvent) => {
 
   if (
     evt.Records.length &&
-    evt.Records[0]?.dynamodb?.NewImage?.PK?.S?.startsWith("WEIGHT#") &&
+    evt.Records[0]?.dynamodb?.NewImage?.PK?.S === "WEIGHT#" &&
     evt.Records[0].dynamodb.NewImage.id.S &&
     evt.Records[0].dynamodb.NewImage.weight.N
   ) {

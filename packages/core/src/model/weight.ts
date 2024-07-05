@@ -1,6 +1,6 @@
-import { Entity, Model } from "dynamodb-onetable";
-import { table, weightWatcherSchema } from "../dynamo/schema";
+import { Entity } from "dynamodb-onetable";
+import { table, weightWatcherSchema } from "../dynamo/dynamo";
 
-type weightEntity = Entity<typeof weightWatcherSchema.models.Weight>;
+type weightEntity = Entity<typeof weightWatcherSchema.models.weight>;
 
-export default table.getModel<weightEntity>("Weight");
+export default table.getModel<weightEntity>("weight");
