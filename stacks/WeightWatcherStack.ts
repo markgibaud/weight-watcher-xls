@@ -1,5 +1,5 @@
 import * as lambda from "aws-cdk-lib/aws-lambda";
-import { Api, EventBus, StackContext, Table } from "sst/constructs";
+import { Api, Cron, EventBus, StackContext, Table } from "sst/constructs";
 
 export function API({ stack }: StackContext) {
   const bus = new EventBus(stack, "bus", {
@@ -38,6 +38,7 @@ export function API({ stack }: StackContext) {
           environment: {
             NODE_ENV: "production",
           },
+          bind: [bus],
         },
       },
     },
@@ -53,44 +54,33 @@ export function API({ stack }: StackContext) {
     code: lambda.Code.fromAsset("layers/chromium"),
   });
 
-  const api = new Api(stack, "api", {
-    defaults: {
-      // authorizer: "iam",
+  new Cron(stack, "cron-record-weight", {
+    schedule: "cron(0 22 * * ? *)",
+    job: {
       function: {
-        bind: [bus],
-      },
-    },
-    routes: {
-      "GET /": {
-        function: {
-          functionName: "weight-watcher-xls-get",
-          handler: "packages/functions/src/record-weight.handler",
-          runtime: "nodejs18.x",
-          timeout: 60,
-          memorySize: 2048,
-          layers: [chromiumLayer],
-          copyFiles: [{ from: "packages/functions/src/creds", to: "." }],
-          nodejs: {
-            esbuild: {
-              external: ["@sparticuz/chromium"],
-            },
-          },
-          environment: {
-            NODE_ENV: "production",
+        functionName: "weight-watcher-xls-cron-record-weight",
+        handler: "packages/functions/src/record-weight.handler",
+        runtime: "nodejs18.x",
+        timeout: 60,
+        memorySize: 2048,
+        layers: [chromiumLayer],
+        nodejs: {
+          esbuild: {
+            external: ["@sparticuz/chromium"],
           },
         },
+        environment: {
+          NODE_ENV: "production",
+        },
+        permissions: [table, "dynamodb:PutItem"],
       },
     },
   });
 
-  const fn = api.getFunction("GET /");
-  fn?.attachPermissions([table, "dynamodb:PutItem"]);
-
   bus.subscribe("weight.recorded", {
-    handler: "packages/functions/src/events/update-goals-xls.handler",
-  });
-
-  stack.addOutputs({
-    ApiEndpoint: api.url,
+    handler: "packages/functions/src/eventHandlers/update-goals-xls.handler",
+    permissions: [table, "dynamodb:Query"],
+    functionName: "weight-watcher-xls-update-goals",
+    copyFiles: [{ from: "packages/functions/src/creds", to: "." }],
   });
 }

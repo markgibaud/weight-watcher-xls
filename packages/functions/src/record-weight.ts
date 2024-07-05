@@ -1,11 +1,12 @@
+import Weight from "@weight-watcher-xls/core/model/weight";
+import { DateTime } from "luxon";
 import playwright from "playwright-core";
 import { ApiHandler } from "sst/node/api";
+
 const chromium = require("@sparticuz/chromium");
 
 const LOCAL_CHROMIUM_PATH =
   "~/Library/Caches/ms-playwright/chromium-1091/chrome-mac/Chromium.app/Contents/MacOS/Chromium";
-
-const recordVideo = false;
 
 export const handler = ApiHandler(async (_evt) => {
   const isLambdaEnv = !!process.env.AWS_LAMBDA_FUNCTION_NAME;
@@ -52,11 +53,24 @@ export const handler = ApiHandler(async (_evt) => {
   await page.click(".appHeaderMainNavigationButtons.calendar");
 
   await page.waitForSelector(".today .metricsKeyStat");
-  const weightElement = page.locator(".today .metricsKeyStat");
-  const weight = await weightElement.last().textContent();
-  const measurement = weight?.replace("Weight:", "").replace("kg", "").trim();
+  const weightElement = page.locator(".today .metricsKeyStat").last();
+  const weightContent = await weightElement.textContent();
+  const weight = weightContent?.replace("Weight:", "").replace("kg", "").trim();
 
-  await browser.close();
+  console.log(`successfully scraped weight of ${weight} kg`);
+
+  const date = DateTime.now().toFormat("yyyy-MM-dd");
+  await Weight.create(
+    {
+      weight: Number(weight),
+      date: date,
+    },
+    {
+      exists: false,
+    }
+  ).catch(() => {
+    console.log("Already have a weight for this date.");
+  });
 
   return {
     statusCode: 200,
